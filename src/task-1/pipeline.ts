@@ -16,16 +16,12 @@ import {
 
 export const sendPersonsTaggedAsATransportSequence = async () => {
   const geminiService = new GeminiService(process.env.GEMINI_BACKUP_KEY!);
-
   const csvPath = resolvePath("docs/people.csv");
-
   const rawResults = (await CSVUTIL.parseCSV(csvPath)) as PersonRecord[];
   const personsWithId = enhanceWithId(rawResults);
-
   const filteredJobDescriptions = toJobDescriptionsWithId(
     personsWithId.filter(happyMensFilters),
   );
-
   const taggedResults = await geminiService.generateResponse({
     prompt: `${TAG_JOBS_PROMPT}${JSON.stringify(filteredJobDescriptions)}`,
     config: {
@@ -39,12 +35,13 @@ export const sendPersonsTaggedAsATransportSequence = async () => {
   const transportWorkers = personsWithTags.filter((p) => p.tags?.includes("transport"));
 
   const payload = {
-    apikey: "a50287b9-ed7a-406d-91e1-df6cf443a140",
+    apikey: process.env.AI_DEVS_API_KEY,
     task: "people",
     answer: toAnswerPayload(transportWorkers),
   };
 
   const validatedPayload = PeopleResponseSchema.parse(payload);
+
 
   const httpResponse = await fetch("https://hub.ag3nts.org/verify", {
     method: "POST",

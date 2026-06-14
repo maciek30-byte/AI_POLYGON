@@ -14,7 +14,3 @@ export const PeopleResponseSchema = z.object({
   task: z.literal("people"),
   answer: z.array(PersonSchema),
 });
-
-
-type Person = z.infer<typeof PersonSchema>;
-type PeopleResponse = z.infer<typeof PeopleResponseSchema>;
