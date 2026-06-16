@@ -1,28 +1,76 @@
-import { getAllPeoplesLocations } from "../get_peoples_location.js";
-import { SuspectPerson } from "../constants.js";
-import { PowerPlantWithCoordinates } from "../schemas/PowerPlantResponse.schema.js";
+import { Type } from "@google/genai";
 
-export const tools = [
-    {
-        type: 'function',
-        name:'find_closest_suspect_to_plant',
-        description:"It returns person who is the neearest to Power plant",
-        parameters :{},
-        strict:true
+export const functionDeclarations = [
+  {
+    name: "find_closest_suspect_to_plant",
+    description: "It returns person who is the nearest to Power plant",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        suspectedPersonList: {
+          type: Type.ARRAY,
+          description: "List of people who we suspect to do smth suspicious with our Power plants",
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING, description: "Name of the person" },
+              surname: { type: Type.STRING, description: "Surname of the person" },
+              birthDate: { type: Type.STRING, description: "date of person birth day" },
+              coordinates: {
+                type: Type.OBJECT,
+                description: "Person location coordinates.",
+                properties: {
+                  latitude: {
+                    type: Type.NUMBER,
+                    description: "geographic latitude (latitude, example. 50.0647).",
+                  },
+                  longitude: {
+                    type: Type.NUMBER,
+                    description: "geographic longitude (longitude, example. 19.945).",
+                  },
+                },
+                required: ["latitude", "longitude"],
+              },
+            },
+            required: ["name", "surname", "birthDate", "coordinates"],
+          },
+        },
+      },
+      required: ["suspectedPersonList"],
     },
-    {
-        type:"function",
-        name:'get_acess_level',
-        description:"Return acess level selected person",
-        parameters:{}
-        strict: true
-    }
-]
-
-
-export const find_closest_suspect_to_plant = async (
-  suspectedPersonList: SuspectPerson[],
-  powerPlantsWithCoordinates: PowerPlantWithCoordinates[]
-) => {
-  const personLocations = await getAllPeoplesLocations(suspectedPersonList)
-}
+  },
+  {
+    name: "get_access_level",
+    description: "Return access level selected person",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        name: { type: Type.STRING, description: "Name of the person" },
+        surname: { type: Type.STRING, description: "Surname of the person" },
+        birthDate: { type: Type.STRING, description: "date of person birth day" },
+      },
+      required: ["name", "surname", "birthDate", "coordinates"],
+    },
+  },
+  {
+    name: "send_final_response",
+    description: "Send final response to verify service",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        url: { type: Type.STRING, description: "Url of REST endpoint" },
+        payload: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING, description: "Name of the person" },
+            surname: { type: Type.STRING, description: "Surname of the person" },
+            accessLevel: { type: Type.STRING, description: "Access Level of the person" },
+            powerPlant: { type: Type.STRING, description: "Power Plant CODE" },
+          },
+          required: ["name", "surname", "birthDate", "coordinates"],
+        },
+      },
+      required: ["url", "payload"],
+    },
+  },
+];

@@ -38,6 +38,7 @@ export const POWER_PLANTS_LIST = {
   },
 };
 
+
 export const SUSPICIOUS_PERSONS_LIST = [
   {
     id: 1448,

@@ -1,6 +1,5 @@
 import { PowerPlantWithCoordinates } from "./schemas/PowerPlantResponse.schema.js";
-import { PersonRecord } from "../task-1/types.js";
-import { PersonWithCoordinates } from "./get_peoples_location.js";
+import { PersonWithCoordinates } from "./services/peopleService.js";
 
 const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371;
@@ -13,25 +12,29 @@ const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 export type ClosestPerson = {
-  fullName: string;
+  name: string;
+  surname: string;
   distance: number;
   plantCode: string;
   plantName: string;
+  birthDate: string;
 };
 
 export const findClosestToPlant = (personsLocations: PersonWithCoordinates[], powerPlants: PowerPlantWithCoordinates[]): ClosestPerson => {
-  let best = { fullName: "", distance: Infinity, plantCode: "", plantName: "" };
+  let best = { name: "", surname: "", distance: Infinity, plantCode: "", plantName: "", birthDate: "" };
 
   for (const person of personsLocations) {
-    for (const coord of person.coordinates) {
+    for (const coordinate of person.coordinates) {
       for (const plant of powerPlants) {
-        const distance = haversineDistance(coord.latitude, coord.longitude, plant.lat, plant.long);
+        const distance = haversineDistance(coordinate.latitude, coordinate.longitude, plant.lat, plant.long);
         if (distance < best.distance) {
           best = {
-            fullName: person.fullName,
+            name: person.name,
+            surname: person.surname,
             distance,
             plantCode: plant.code,
             plantName: plant.place,
+            birthDate: person.birthDate,
           };
         }
       }
