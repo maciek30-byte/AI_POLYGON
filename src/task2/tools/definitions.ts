@@ -17,19 +17,22 @@ export const functionDeclarations = [
               surname: { type: Type.STRING, description: "Surname of the person" },
               birthDate: { type: Type.STRING, description: "date of person birth day" },
               coordinates: {
-                type: Type.OBJECT,
-                description: "Person location coordinates.",
-                properties: {
-                  latitude: {
-                    type: Type.NUMBER,
-                    description: "geographic latitude (latitude, example. 50.0647).",
+                type: Type.ARRAY,
+                description: "All known locations of this person.",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    latitude: {
+                      type: Type.NUMBER,
+                      description: "geographic latitude (example: 50.0647).",
+                    },
+                    longitude: {
+                      type: Type.NUMBER,
+                      description: "geographic longitude (example: 19.945).",
+                    },
                   },
-                  longitude: {
-                    type: Type.NUMBER,
-                    description: "geographic longitude (longitude, example. 19.945).",
-                  },
+                  required: ["latitude", "longitude"],
                 },
-                required: ["latitude", "longitude"],
               },
             },
             required: ["name", "surname", "birthDate", "coordinates"],
@@ -47,9 +50,9 @@ export const functionDeclarations = [
       properties: {
         name: { type: Type.STRING, description: "Name of the person" },
         surname: { type: Type.STRING, description: "Surname of the person" },
-        birthDate: { type: Type.STRING, description: "date of person birth day" },
+        birthDate: { type: Type.STRING, description: "full date of person birth day" },
       },
-      required: ["name", "surname", "birthDate", "coordinates"],
+      required: ["name", "surname", "birthDate"],
     },
   },
   {
@@ -67,7 +70,7 @@ export const functionDeclarations = [
             accessLevel: { type: Type.STRING, description: "Access Level of the person" },
             powerPlant: { type: Type.STRING, description: "Power Plant CODE" },
           },
-          required: ["name", "surname", "birthDate", "coordinates"],
+          required: ["name", "surname", "accessLevel", "powerPlant"],
         },
       },
       required: ["url", "payload"],

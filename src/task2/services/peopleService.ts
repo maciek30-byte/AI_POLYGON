@@ -59,7 +59,7 @@ export class PeopleService {
           apikey: process.env.AI_DEVS_API_KEY,
           name,
           surname,
-          birthYear: birthDate,
+          birthYear: this.convertBirthDateToBirthYear(birthDate),
         }),
       });
 
@@ -68,5 +68,16 @@ export class PeopleService {
       console.error("Failed to get person access level", error);
       throw error;
     }
+  }
+
+  private static convertBirthDateToBirthYear(birthDate: string): number {
+    if (!birthDate) throw new Error("Birth date is required");
+    const year = birthDate.split("-")[0];
+    const parsedYear = parseInt(year, 10);
+
+    if (isNaN(parsedYear)) {
+      throw new Error(`Invalid birthDate format received: ${birthDate}`);
+    }
+    return parsedYear;
   }
 }
