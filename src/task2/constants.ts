@@ -39,7 +39,7 @@ export const POWER_PLANTS_LIST = {
 };
 
 
-export const SUSPICIOUS_PERSONS_LIST = [
+export const SUSPECTED_PERSONS_LIST = [
   {
     id: 1448,
     name: "Cezary",
@@ -97,4 +97,4 @@ export const SUSPICIOUS_PERSONS_LIST = [
   },
 ]
 
-export type SuspectPerson = typeof SUSPICIOUS_PERSONS_LIST[number]
+export type SuspectPerson = typeof SUSPECTED_PERSONS_LIST[number]

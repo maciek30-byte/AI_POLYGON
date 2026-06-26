@@ -3,7 +3,7 @@ import { POWER_PLANTS_LIST } from "./constants.js";
 import { PowerPlantResponseSchema } from "./schemas/PowerPlantResponse.schema.js";
 
 
-export const getPowerPlantsCoordinates  = async ()=>{
+export const getPowerPlantsCoordinates  = async (): Promise<string>=>{
   const geminiService = new GeminiService(process.env.GEMINI_BACKUP_KEY!);
   
   return await geminiService.generateResponse({
