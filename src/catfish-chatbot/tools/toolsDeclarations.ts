@@ -1,6 +1,6 @@
-import { Type } from "@google/genai";
+import { Type, FunctionDeclaration } from "@google/genai";
 
-export const functionDeclarations = [
+export const toolsDeclarations: FunctionDeclaration[] = [
   {
     name: "get_package_status",
     description: "It returns information about package status based on id",

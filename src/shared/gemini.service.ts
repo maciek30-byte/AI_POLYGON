@@ -1,4 +1,4 @@
-import { GenerateContentConfig, GenerateContentResponse, GoogleGenAI } from "@google/genai";
+import { GenerateContentConfig, GenerateContentResponse, GoogleGenAI, Content, FunctionDeclaration } from "@google/genai";
 import { CacheUtil } from "./cache-util.js";
 
 type GeminiModel = "gemini-2.5-flash" | "gemini-2.5-pro" | "gemini-2.5-flash-lite";
@@ -7,6 +7,16 @@ interface GenerateOptions {
   model?: GeminiModel;
   prompt: string;
   config?: GenerateContentConfig;
+}
+
+interface AgentTurnOptions {
+  model?: GeminiModel;
+  history: Content[]; // <- to jest ten nowy argument
+  userMessage: string;
+  systemInstruction?: string;
+  tools?: FunctionDeclaration[];
+  toolExecutor: (name: string, args: any) => Promise<any>; // Twoja logika biznesowa
+  maxIterations?: number;
 }
 
 export class GeminiService {
@@ -33,15 +43,55 @@ export class GeminiService {
     });
   }
 
-  async generateStream({ prompt, model = this.defaultModel }: GenerateOptions): Promise<void> {
-    const stream = await this.ai.models.generateContentStream({
-      model,
-      contents: prompt,
-    });
+  async runAgentTurn({
+    history,
+    userMessage,
+    model = this.defaultModel,
+    systemInstruction,
+    tools = [],
+    toolExecutor,
+    maxIterations = 5,
+  }: AgentTurnOptions): Promise<{ text: string; history: Content[] }> {
+    history.push({ role: "user", parts: [{ text: userMessage }] });
 
-    for await (const chunk of stream) {
-      process.stdout.write(chunk.text ?? "");
+    for (let i = 0; i < maxIterations; i++) {
+      const response = await this.withRetry(() =>
+        this.ai.models.generateContent({
+          model,
+          contents: history,
+          config: {
+            systemInstruction,
+            tools: tools.length ? [{ functionDeclarations: tools }] : undefined,
+          },
+        }),
+      );
+
+      const calls = response.functionCalls;
+      if (!calls || calls.length === 0) {
+        const text = response.text ?? "";
+        history.push({ role: "model", parts: [{ text }] });
+        return { text, history };
+      }
+
+      history.push({
+        role: "model",
+        parts: calls.map((c) => ({ functionCall: c })),
+      });
+
+      const results = await Promise.all(
+        calls.map(async (c) => ({
+          name: c.name,
+          response: { value: await toolExecutor(c.name!, c.args) },
+        })),
+      );
+
+      history.push({
+        role: "user",
+        parts: results.map((r) => ({ functionResponse: r })),
+      });
     }
+
+    throw new Error("You reached operation limit");
   }
 
   private async withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
@@ -50,7 +100,6 @@ export class GeminiService {
         return await fn();
       } catch (error) {
         if (attempt === retries) throw error;
-        console.log(`Attempt ${attempt} failed, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
